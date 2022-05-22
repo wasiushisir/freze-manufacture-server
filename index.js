@@ -20,7 +20,8 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
     try{
         await client.connect();
         const userCollection=client.db('freeze').collection('user');
-
+        const productCollection=client.db('freeze').collection('products');
+     //create user
         app.put('/user/:email',async(req,res)=>{
           const email=req.params.email;
           const user=req.body
@@ -37,6 +38,17 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
           }, process.env.ACCESS_TOKEN_SECRETE, { expiresIn: '1h' });
 
           res.send({result,token})
+
+        })
+
+
+
+        //get products
+
+        app.get('/products',async(req,res)=>{
+          const query={};
+          const products=await productCollection.find(query).toArray();
+          res.send(products);
 
         })
 
