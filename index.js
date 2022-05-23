@@ -1,6 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config()
 const app=express();
@@ -49,6 +49,34 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
           const query={};
           const products=await productCollection.find(query).toArray();
           res.send(products);
+
+        })
+
+
+        //get individual product
+
+        app.get('/products/:id',async(req,res)=>{
+          const id=req.params.id;
+          const query={_id:ObjectId(id)}
+          const product=await productCollection.findOne(query)
+          res.send(product)
+        })
+
+
+        //increase product quantity
+
+        app.put('/productQuantity/:id',async(req,res)=>{
+          const id=req.params.id;
+          const quantity=req.body;
+           console.log(quantity);
+          const filter={_id:ObjectId(id)}
+          const options = { upsert: true };
+          const updateDoc={
+            $set:quantity
+          }
+          const result=await productCollection.updateOne(filter, updateDoc, options);
+          res.send(result)
+
 
         })
 
