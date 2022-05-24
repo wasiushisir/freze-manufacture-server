@@ -131,6 +131,15 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
         })
 
 
+        //create products
+
+        app.post('/products',async(req,res)=>{
+          const product=req.body;
+          const result=await productCollection.insertOne(product);
+          res.send({result,success:true})
+        })
+
+
         //get individual product
 
         app.get('/products/:id',async(req,res)=>{
