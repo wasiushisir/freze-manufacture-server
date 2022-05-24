@@ -64,6 +64,14 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
         })
 
+        //get user
+
+        app.get('/user',async(req,res)=>{
+          const query={}
+          const user=await userCollection.find(query).toArray();
+          res.send(user)
+        })
+
 
 
         //get products
