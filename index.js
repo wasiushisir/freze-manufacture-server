@@ -64,9 +64,35 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
         })
 
+
+        //create admin
+        app.put('/user/admin/:email',verifyJwt,async(req,res)=>{
+          const email=req.params.email;
+         
+          const filter={email:email}
+          
+
+          const updateDoc={
+            $set:{role:'admin'}
+          }
+
+          const result=await userCollection.updateOne(filter, updateDoc);
+         
+          res.send(result)
+
+        })
+
+
+
+
+
+
+
+
+
         //get user
 
-        app.get('/user',async(req,res)=>{
+        app.get('/user',verifyJwt,async(req,res)=>{
           const query={}
           const user=await userCollection.find(query).toArray();
           res.send(user)
