@@ -65,11 +65,14 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
         })
 
 
-        //create admin
+        //create make admin
         app.put('/user/admin/:email',verifyJwt,async(req,res)=>{
           const email=req.params.email;
-         
-          const filter={email:email}
+          const requester=req.decoded.email;
+          const requestAccount=await userCollection.findOne({email:requester})
+          if(requestAccount.role=='admin'){
+
+            const filter={email:email}
           
 
           const updateDoc={
@@ -78,8 +81,26 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
           const result=await userCollection.updateOne(filter, updateDoc);
          
-          res.send(result)
+           return res.send(result)
 
+          }
+          else{
+            res.status(403).send({message:'forbidden access'})
+          }
+         
+          
+
+        })
+
+
+        //search admin
+
+        app.get('/admin/:email',async(req,res)=>{
+          const email=req.params.email;
+          const query={email:email}
+          const user=await userCollection.findOne(query)
+          const isAdmin=user.role==='admin'
+          res.send({admin:isAdmin})
         })
 
 
