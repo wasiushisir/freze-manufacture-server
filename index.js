@@ -42,6 +42,8 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
         const userCollection=client.db('freeze').collection('user');
         const productCollection=client.db('freeze').collection('products');
         const ordertCollection=client.db('freeze').collection('orders');
+        const reviewCollection=client.db('freeze').collection('reviews');
+        const profileCollection=client.db('freeze').collection('profiles');
      //create user
         app.put('/user/:email',async(req,res)=>{
           const email=req.params.email;
@@ -141,6 +143,36 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
           const order=await ordertCollection.deleteOne(query)
           res.send(order);
 
+
+        })
+
+
+        //create review
+
+        app.post('/review',async(req,res)=>{
+          const review=req.body;
+          const result=await reviewCollection.insertOne(review)
+          res.send({result,success:true})
+
+        })
+
+
+        //update profile
+
+        app.put('/myprofile/:userEmail',async(req,res)=>{
+          const email=req.params.userEmail;
+          const user=req.body;
+          console.log(user);
+          const filter={email:email}
+          const options = { upsert: true };
+
+          const updateDoc = {
+            $set:user
+          };
+
+          const result = await profileCollection.updateOne(filter, updateDoc, options);
+
+          res.send(result)
 
         })
 
