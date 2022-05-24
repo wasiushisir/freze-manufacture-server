@@ -15,6 +15,26 @@ app.use(express.json())
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.cghyb.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+   const verifyJwt=async(req,res,next)=>{
+    const authHeader=req.headers.authorization;
+    if(!authHeader){
+     return res.status(401).send({message:'unauthorized access'})
+    }
+    const token=authHeader.split(' ')[1]
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRETE, function(err, decoded) {
+      if(err){
+        return res.status(403).send({message:'forbidden access'})
+      }
+      req.decoded=decoded;
+      next();
+      
+    });
+    
+
+
+   }
+
   async function run(){
 
     try{
@@ -86,8 +106,42 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
         app.post('/order',async(req,res)=>{
           const order=req.body;
+         
           const result=await ordertCollection.insertOne(order)
           res.send({result,success:true})
+        })
+
+
+        //get my order
+
+        app.get('/myorder',verifyJwt,async(req,res)=>{
+          const email=req.query.email;
+          const decodedEmail=req.decoded.email;
+          console.log(email);
+          if(email===decodedEmail)
+          {
+            const filter={email:email}
+          const order=await ordertCollection.find(filter).toArray();
+         return res.send(order)
+
+          }
+
+         return res.status(403).send({message:'forbidden access'})
+          
+          
+        })
+
+
+
+        //delete myorder
+        app.delete('/deleteorder/:id',async(req,res)=>{
+
+          const id=req.params.id;
+          const query={_id:ObjectId(id)}
+          const order=await ordertCollection.deleteOne(query)
+          res.send(order);
+
+
         })
 
 
