@@ -123,7 +123,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
         //get products
 
-        app.get('/products',async(req,res)=>{
+        app.get('/products',verifyJwt,async(req,res)=>{
           const query={};
           const products=await productCollection.find(query).toArray();
           res.send(products);
@@ -139,10 +139,20 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
           res.send({result,success:true})
         })
 
+        //delete product
+
+        app.delete('/products/:id',verifyJwt,async(req,res)=>{
+          const id=req.params.id;
+          const query={_id:ObjectId(id)}
+          const result=await productCollection.deleteOne(query)
+          res.send(result)
+
+        })
+
 
         //get individual product
 
-        app.get('/products/:id',async(req,res)=>{
+        app.get('/products/:id',verifyJwt,async(req,res)=>{
           const id=req.params.id;
           const query={_id:ObjectId(id)}
           const product=await productCollection.findOne(query)
