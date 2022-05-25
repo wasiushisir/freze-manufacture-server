@@ -48,6 +48,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
         const ordertCollection=client.db('freeze').collection('orders');
         const reviewCollection=client.db('freeze').collection('reviews');
         const profileCollection=client.db('freeze').collection('profiles');
+        const paymentCollection = client.db('freeze').collection('payments');
 
         app.post('/create-payment-intent',  async(req, res) =>{
           const service = req.body;
@@ -212,6 +213,32 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
           const result=await ordertCollection.insertOne(order)
           res.send({result,success:true})
         })
+
+        //patch
+
+        app.patch('/order/:id',  async(req, res) =>{
+          const id  = req.params.id;
+          const payment = req.body;
+          const filter = {_id: ObjectId(id)};
+          const updatedDoc = {
+            $set: {
+              paid: true,
+              transactionId: payment.transactionId
+            }
+          }
+    
+          const result = await paymentCollection.insertOne(payment);
+          const updatedBooking = await ordertCollection.updateOne(filter, updatedDoc);
+          res.send(updatedBooking);
+        })
+
+
+
+
+
+
+
+
 
 
         //get my order
