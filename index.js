@@ -283,6 +283,14 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
         })
 
+        //get review
+
+        app.get('/review',async(req,res)=>{
+          const query={}
+          const review=await reviewCollection.find(query).toArray();
+          res.send(review)
+        })
+
 
         //update profile
 
