@@ -1,10 +1,12 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config()
 const app=express();
 const port=process.env.PORT || 5000
+const stripe = require('stripe')(process.env.STRIPE_SECRETE_KEY)
 
 //middleware
 app.use(cors())
@@ -17,10 +19,12 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
    const verifyJwt=async(req,res,next)=>{
     const authHeader=req.headers.authorization;
+    
     if(!authHeader){
      return res.status(401).send({message:'unauthorized access'})
     }
     const token=authHeader.split(' ')[1]
+    // console.log(token);
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRETE, function(err, decoded) {
       if(err){
@@ -44,6 +48,28 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
         const ordertCollection=client.db('freeze').collection('orders');
         const reviewCollection=client.db('freeze').collection('reviews');
         const profileCollection=client.db('freeze').collection('profiles');
+
+        app.post('/create-payment-intent',  async(req, res) =>{
+          const service = req.body;
+          const price = service.price;
+          const amount = price*100;
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount : amount,
+            currency: 'INR',
+           
+            payment_method_types:['card']
+          });
+          res.send({clientSecret: paymentIntent.client_secret})
+        });
+
+
+
+
+
+
+
+
+
      //create user
         app.put('/user/:email',async(req,res)=>{
           const email=req.params.email;
@@ -123,7 +149,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
         //get products
 
-        app.get('/products',verifyJwt,async(req,res)=>{
+        app.get('/products',async(req,res)=>{
           const query={};
           const products=await productCollection.find(query).toArray();
           res.send(products);
@@ -152,7 +178,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
         //get individual product
 
-        app.get('/products/:id',verifyJwt,async(req,res)=>{
+        app.get('/products/:id',async(req,res)=>{
           const id=req.params.id;
           const query={_id:ObjectId(id)}
           const product=await productCollection.findOne(query)
@@ -248,6 +274,16 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
           res.send(result)
 
+        })
+
+
+        //getting payment id
+
+        app.get('/payment/:id',async(req,res)=>{
+          const id=req.params.id;
+          const query={_id:ObjectId(id)}
+          const order=await ordertCollection.findOne(query)
+          res.send(order)
         })
 
 
