@@ -24,7 +24,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
      return res.status(401).send({message:'unauthorized access'})
     }
     const token=authHeader.split(' ')[1]
-    // console.log(token);
+     console.log(token);
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRETE, function(err, decoded) {
       if(err){
@@ -168,7 +168,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
         //delete product
 
-        app.delete('/products/:id',verifyJwt,async(req,res)=>{
+        app.delete('/pro/:id',async(req,res)=>{
           const id=req.params.id;
           const query={_id:ObjectId(id)}
           const result=await productCollection.deleteOne(query)
